@@ -848,15 +848,18 @@ function graph_load()
 
                 // costs
                 let cost_import = data.agile[2*(z-1)][1]*0.01;
+                let cost_import_go = data.go[2*(z-1)][1]*0.01;
                 let cost_export = data.outgoing[2*(z-1)][1]*0.01*-1;
                 
                 // half hourly datasets for graph
                 data["import_cost"].push([time,kwh_import*cost_import]);
+                data["import_cost_go"].push([time,kwh_import*cost_import_go]);
                 data["export_cost"].push([time,kwh_export*cost_export*-1]);
                 data["solar_used_cost"].push([time,kwh_solar_used*cost_import]);
 
                 // cost totals
                 total_cost_import += kwh_import*cost_import
+                total_cost_import_go += kwh_import*cost_import_go
                 total_cost_export += kwh_export*cost_export
                 total_cost_solar_used += kwh_solar_used*cost_import
 
