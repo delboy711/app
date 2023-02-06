@@ -825,6 +825,7 @@ function graph_load()
                 let kwh_import = 0;
                 let kwh_export = 0;
                 let kwh_solar = 0;
+                let kwh_solar_used = 0;
 
                 if (use_kwh[z]!=undefined && use_kwh[z-1]!=undefined) kwh_use = (use_kwh[z][1]-use_kwh[z-1][1]);
                 if (import_kwh[z]!=undefined && import_kwh[z-1]!=undefined) kwh_import = (import_kwh[z][1]-import_kwh[z-1][1]);
@@ -839,7 +840,8 @@ function graph_load()
                 if (kwh_export<0.0) kwh_export = 0.0;
 
                 // calc export & self consumption
-                let kwh_solar_used = kwh_use - kwh_import;		//does not apply if a battery is fitted
+                //let kwh_solar_used = kwh_use - kwh_import;		//does not apply if a battery is fitted
+                kwh_solar_used = kwh_solar - kwh_export;
                 if (kwh_solar<=0.0) kwh_solar_used = 0.0;		//cannot use solar at night
                 
 			
