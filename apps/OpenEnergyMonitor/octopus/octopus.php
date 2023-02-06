@@ -781,6 +781,7 @@ function graph_load()
     var total_cost_export = 0
     var total_kwh_export = 0
     var total_cost_solar_used = 0
+    var total_cost_solar_used_go = 0
     var total_kwh_solar_used = 0
     
     var total_co2 = 0;
@@ -869,6 +870,7 @@ function graph_load()
                 total_cost_import_go += kwh_import*cost_import_go
                 total_cost_export += kwh_export*cost_export
                 total_cost_solar_used += kwh_solar_used*cost_import
+                total_cost_solar_used_go += kwh_solar_used*cost_import_go
 
                 if (show_carbonintensity) {
                     let co2intensity = data.carbonintensity[2*(z-1)][1];
@@ -998,15 +1000,23 @@ function graph_load()
 
         var unit_cost_solar_used = (total_cost_solar_used/total_kwh_solar_used);
         out += "<tr>";
-        out += "<td>Solar self consumption</td>";
+        out += "<td>Solar self consumption value (Agile)</td>";
         out += "<td>"+total_kwh_solar_used.toFixed(1)+" kWh</td>";
         out += "<td>£"+total_cost_solar_used.toFixed(2)+"</td>";
         out += "<td>"+(unit_cost_solar_used*100*1.05).toFixed(1)+"p/kWh (inc VAT)</td>";
         out += "</tr>";
+        
+         var unit_cost_solar_used = (total_cost_solar_used_go/total_kwh_solar_used);
+        out += "<tr>";
+        out += "<td>Solar self consumption value (Go)</td>";
+        out += "<td>"+total_kwh_solar_used.toFixed(1)+" kWh</td>";
+        out += "<td>£"+total_cost_solar_used_go.toFixed(2)+"</td>";
+        out += "<td>"+(unit_cost_solar_used*100*1.05).toFixed(1)+"p/kWh (inc VAT)</td>";
+        out += "</tr>";       
 
         var unit_cost_solar_combined = ((total_cost_solar_used+total_cost_export)/(total_kwh_solar_used+total_kwh_export));
         out += "<tr>";
-        out += "<td>Solar + Export</td>";
+        out += "<td>Value of Solar + Export (Agile)</td>";
         out += "<td>"+(total_kwh_solar_used+total_kwh_export).toFixed(1)+" kWh</td>";
         out += "<td>£"+(total_cost_solar_used+total_cost_export).toFixed(2)+"</td>";
         out += "<td>"+(unit_cost_solar_combined*100*1.05).toFixed(1)+"p/kWh (inc VAT)</td>";
