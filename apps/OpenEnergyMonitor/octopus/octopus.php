@@ -194,7 +194,7 @@ global $path, $session, $v;
                     <h2 class="appconfig-title text-primary"><?php echo _('Octopus Agile'); ?></h2>
                     <p class="lead">Explore Octopus Agile tariff costs over time.</p>
                     <p><strong class="text-white">Auto configure:</strong> This app can auto-configure connecting to emoncms feeds with the names shown on the right, alternatively feeds can be selected by clicking on the edit button.</p>
-                    <p><strong class="text-white">Import & Import kWh</strong> The standard naming for electricity imported from the grid in a household without solar PV is 'use' and 'use_kwh', this app expects 'import' and 'import_kwh' in order to provide compatibility with the Solar PV option as well. Select relevant house consumption feeds using the dropdown feed selectors as required. Feeds 'use_kwh' and 'solar_kwh' are optional.</p>
+                    <p><strong class="text-white">Import, Import kWh & Export kWh</strong> The standard naming for electricity imported from the grid in a household without solar PV is 'use' and 'use_kwh', this app expects 'import', 'import_kwh' and 'export_kWh in order to provide compatibility with the Solar PV option as well. Select relevant house consumption feeds using the dropdown feed selectors as required. Feeds 'use_kwh' and 'solar_kwh' are optional.</p>
                     <p><strong class="text-white">Cumulative kWh</strong> feeds can be generated from power feeds with the power_to_kwh input processor. To create cumulative kWh feeds from historic power data try the postprocess module.</p>
                     <p><strong class="text-white">meter_kwh_hh</strong> If you have half hourly Octopus smart meter data available select the applicable feed.</p>
                     <p><strong class="text-white">Optional: Octopus Outgoing</strong> Include total house consumption (use_kwh) and solar PV (solar_kwh) feeds to explore octopus outgoing feed-in-tariff potential.</p>
@@ -242,6 +242,7 @@ config.app = {
     "title":{"type":"value", "default":"OCTOPUS AGILE", "name": "Title", "description":"Optional title for app"},
     "import":{"optional":true, "type":"feed", "autoname":"import", "engine":"5"},
     "import_kwh":{"type":"feed", "autoname":"import_kwh", "engine":5},
+    "export_kwh":{"type":"feed", "autoname":"export_kwh", "engine":5},
     "use_kwh":{"optional":true, "type":"feed", "autoname":"use_kwh", "engine":5},
     "solar_kwh":{"optional":true, "type":"feed", "autoname":"solar_kwh", "engine":5},
     "meter_kwh_hh":{"optional":true, "type":"feed", "autoname":"meter_kwh_hh", "engine":5},
@@ -688,7 +689,8 @@ function graph_load()
     var use_kwh = [];
     if (solarpv_mode) use_kwh = feed.getdata(feeds["use_kwh"].id,view.start,view.end,interval);
     var solar_kwh = [];
-    if (solarpv_mode) solar_kwh = feed.getdata(feeds["solar_kwh"].id,view.start,view.end,interval);    
+    if (solarpv_mode) solar_kwh = feed.getdata(feeds["solar_kwh"].id,view.start,view.end,interval);  
+    var export_kwh = feed.getdata(feeds["export_kwh"].id,view.start,view.end,interval);
     var meter_kwh_hh = []
     if (smart_meter_data) meter_kwh_hh = feed.getdata(feeds["meter_kwh_hh"].id,view.start,view.end,interval); 
     
@@ -820,21 +822,26 @@ function graph_load()
                 // calculate half hour kwh
                 let kwh_use = 0;
                 let kwh_import = 0;
+                let kwh_export = 0;
                 let kwh_solar = 0;
 
                 if (use_kwh[z]!=undefined && use_kwh[z-1]!=undefined) kwh_use = (use_kwh[z][1]-use_kwh[z-1][1]);
                 if (import_kwh[z]!=undefined && import_kwh[z-1]!=undefined) kwh_import = (import_kwh[z][1]-import_kwh[z-1][1]);
                 if (solar_kwh[z]!=undefined && solar_kwh[z-1]!=undefined) kwh_solar = (solar_kwh[z][1]-solar_kwh[z-1][1]);
+                if (export_kwh[z]!= undefined && export_kwh[z-1]!=undefined) kwh_export = (export_kwh[z][1]-export_kwh[z-1][1]);
+				
 
                 // limits
                 if (kwh_use<0.0) kwh_use = 0.0;
                 if (kwh_import<0.0) kwh_import = 0.0;
                 if (kwh_solar<0.0) kwh_solar = 0.0;
+                if (kwh_export<0.0) kwh_export = 0.0;
 
                 // calc export & self consumption
-                let kwh_solar_used = kwh_use - kwh_import;
-                let kwh_export = kwh_solar - kwh_solar_used;
-
+                let kwh_solar_used = kwh_use - kwh_import;		//does not apply if a battery is fitted
+                if (kwh_solar<=0.0) kwh_solar_used = 0.0;		//cannot use solar at night
+                
+			
                 // half hourly datasets for graph
                 data["use"].push([time,kwh_use]);
                 data["import"].push([time,kwh_import]);
