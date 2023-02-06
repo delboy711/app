@@ -801,6 +801,7 @@ function graph_load()
     for (var z=1; z<import_kwh.length; z++) {
         if (import_kwh[z][0]==this_halfhour) {
             import_kwh[z+1] = [this_halfhour+1800000,feeds["import_kwh"].value]
+            export_kwh[z+1] = [this_halfhour+1800000,feeds["export_kwh"].value]
             this_halfhour_index = z
             if (solarpv_mode) {
                 use_kwh[z+1] = [this_halfhour+1800000,feeds["use_kwh"].value]
